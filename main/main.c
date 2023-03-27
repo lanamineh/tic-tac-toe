@@ -6,10 +6,11 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"
 
-#define PIN_NUM_MISO 2
-#define PIN_NUM_MOSI 3
-#define PIN_NUM_CLK 0
-#define PIN_NUM_CS 1
+#define PIN_NUM_MISO 9
+#define PIN_NUM_MOSI 0
+#define PIN_NUM_CLK 1
+#define PIN_NUM_CS 2
+#define PIN_NUM_DC 3
 
 void app_main(void)
 {
