@@ -22,7 +22,7 @@ From top to bottom, the pins on the board are as follows:
 - **Gnd:** ground
 - **SCK:** SPI clock input, connected to microcontroller pin 1
 - **MISO:** Microcontroller in, serial out. This pin is connected to the SD card as the TFT display is write-only. I have chosen to connect it to ground.
-- **MOSI:** Microcontroller out, serial in. Used to send data to the display, connected to microcontroller pin 0.
+- **MOSI:** Microcontroller out, serial in. Used to send data to the display, connected to microcontroller pin 10.
 - **TFT_CS:** Chip select for the display. Held high as default, and then held low when data is being sent. Connected to microcontroller pin 2.
 - **RESET:** If you connect this to ground it will reset the display. I have connected this to power.
 - **D/C:** Set low if you are sending a command (see section 10 of the manual) to the display, and high if sending data. Connected to microcontroller pin 3.
@@ -32,3 +32,5 @@ From top to bottom, the pins on the board are as follows:
 Note that the microcontroller pins have been chosen for convenience due to the breadboard layout.
 
 See [this tutorial](https://learn.adafruit.com/1-8-tft-display?view=all) for more details. And the [manual](ST7735.pdf) for the display.
+
+Note: Previously had MOSI on pin 0, but that turned out to be a used for another function.

@@ -7,7 +7,7 @@
 #include "esp_log.h"
 
 #define PIN_NUM_MISO 9
-#define PIN_NUM_MOSI 0
+#define PIN_NUM_MOSI 10
 #define PIN_NUM_CLK 1
 #define PIN_NUM_CS 2
 #define PIN_NUM_DC 3
@@ -29,7 +29,7 @@ void app_main(void)
     // Configure the device
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = 10*1000*1000, 
-        .mode = 3,                         
+        .mode = 0,                         
         .spics_io_num = PIN_NUM_CS,     
         .queue_size = 1,                
     };
@@ -38,18 +38,41 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
     ESP_LOGI("main", "SPI device setup return code = %d", ret);
 
-    // Transmit some data
-    const char *data = "Hello";
-    spi_transaction_t t = {
-	.length = 5*8,  // Length of data * num bits in a byte
-	.tx_buffer = data,
+    // Set up the D/C pin as a general input output pin
+    gpio_config_t io_conf = {
+	.pin_bit_mask = (1ULL << PIN_NUM_DC),
+	.mode = GPIO_MODE_OUTPUT,
+	.pull_up_en = 0,
+	.pull_down_en = 1,
+	.intr_type = GPIO_INTR_DISABLE
     };
+    gpio_config(&io_conf);    
+    gpio_set_level(PIN_NUM_DC, 0);  // Only transmit commands
+    
+    // Transmit some data
+    uint8_t data = 0x01; // Software reset
+    //const char * data = "Hi";
+    spi_transaction_t t = {
+	.length = 8,  // Length of data * num bits in a byte
+	.tx_buffer = &data,
+    };
+    spi_device_polling_transmit(device, &t); 
+    vTaskDelay(120 / portTICK_PERIOD_MS);
 
+    data = 0x11; // Sleep out
+    spi_device_polling_transmit(device, &t);
+    vTaskDelay(120 / portTICK_PERIOD_MS);
+
+    data = 0x29; // Display on
+    spi_device_polling_transmit(device, &t); 
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
     while (true)
     {
-	ret=spi_device_polling_transmit(device, &t);  //Transmit!
-	ESP_ERROR_CHECK(ret);
-	ESP_LOGI("main", "Transmit return code = %d", ret);
-	vTaskDelay(1 / portTICK_PERIOD_MS);
+	vTaskDelay(120 / portTICK_PERIOD_MS);
+	/* ret=spi_device_polling_transmit(device, &t);  //Transmit! */
+	/* ESP_ERROR_CHECK(ret); */
+	/* ESP_LOGI("main", "Transmit return code = %d", ret); */
+	/* vTaskDelay(1 / portTICK_PERIOD_MS); */
     }
 }
