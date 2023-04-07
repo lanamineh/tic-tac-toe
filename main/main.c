@@ -66,15 +66,13 @@ void app_main(void)
     data = 0x30; // Set partial area
     spi_device_polling_transmit(device, &t);
     gpio_set_level(PIN_NUM_DC, 1);  // Transmit data
-    data = 0x00;  // Start
-    spi_device_polling_transmit(device, &t);
-    data = 0x00;
-    spi_device_polling_transmit(device, &t);
-    data = 0x00;  // End
-    spi_device_polling_transmit(device, &t);
-    data = 0x50;
-    spi_device_polling_transmit(device, &t);
-
+    uint32_t long_data = 0x50000000;
+    spi_transaction_t long_t = {
+	.length = 8*4,  // Length of data * num bits in a byte
+	.tx_buffer = &long_data,
+    };
+    spi_device_polling_transmit(device, &long_t);
+    
     gpio_set_level(PIN_NUM_DC, 0);  // Only transmit commands
     data = 0x12; // Partial mode on
     spi_device_polling_transmit(device, &t);
