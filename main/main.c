@@ -76,25 +76,25 @@ void app_main(void)
     spi_device_polling_transmit(device, &t); 
 
     // Try to get one row
-    /* data = 0x2b;  // Row address set */
-    /* spi_device_polling_transmit(device, &t); */
-    /* gpio_set_level(PIN_NUM_DC, 1); */
-    /* uint8_t y_vals[] = {0x00, 0x00, 0x00, 0x04}; */
-    /* t.length = 4*8; */
-    /* t.tx_buffer = y_vals; */
-    /* spi_device_polling_transmit(device, &t); */
+    data = 0x2b;  // Row address set
+    spi_device_polling_transmit(device, &t);
+    gpio_set_level(PIN_NUM_DC, 1);
+    uint8_t y_vals[] = {0x00, 0x00, 0x00, 0x02};
+    t.length = 4*8;
+    t.tx_buffer = y_vals;
+    spi_device_polling_transmit(device, &t);
     // Enable write to ram
     gpio_set_level(PIN_NUM_DC, 0);
     data = 0x2c;
-    /* t.length = 8; */
-    /* t.tx_buffer = &data; */
+    t.length = 8;
+    t.tx_buffer = &data;
     spi_device_polling_transmit(device, &t);
     // Write pixels
     gpio_set_level(PIN_NUM_DC, 1);
     uint8_t color[] = {0x00, 0x00, 0xff};
     t.length = 3*8;
     t.tx_buffer = color;
-    for (int i = 0; i < 128*160; i++) {
+    for (int i = 0; i < 132*2; i++) {
 	spi_device_polling_transmit(device, &t);
     }
 
