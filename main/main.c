@@ -6,6 +6,7 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
+#include "commands.h"
 
 #define PIN_NUM_MISO 9
 #define PIN_NUM_MOSI 10
@@ -51,7 +52,7 @@ void app_main(void)
     gpio_set_level(PIN_NUM_DC, 0);  // Only transmit commands
     
     // Transmit some data
-    uint8_t data = 0x01; // Software reset
+    uint8_t data = SWRESET;
     //const char * data = "Hi";
     spi_transaction_t t = {
 	.length = 8,  // Length of data * num bits in a byte
@@ -60,38 +61,39 @@ void app_main(void)
     spi_device_polling_transmit(device, &t); 
     vTaskDelay(120 / portTICK_PERIOD_MS);
 
-    data = 0x11; // Sleep out
+    data = SLPOUT;
     spi_device_polling_transmit(device, &t);
     vTaskDelay(120 / portTICK_PERIOD_MS);
 
     // Set 18-bit pixel mode
-    data = 0x3a;
-    spi_device_polling_transmit(device, &t);
-    gpio_set_level(PIN_NUM_DC, 1);
-    data = 0x06;
-    spi_device_polling_transmit(device, &t);
+    /* data = COLMOD; */
+    /* spi_device_polling_transmit(device, &t); */
+    /* gpio_set_level(PIN_NUM_DC, 1); */
+    /* data = 0x06; */
+    /* spi_device_polling_transmit(device, &t); */
 
     gpio_set_level(PIN_NUM_DC, 0);
-    data = 0x29; // Display on
+    data = DISPON;
     spi_device_polling_transmit(device, &t); 
 
+    // IMPORTANT: This doesn't work before display is on
     // Try to get one row
-    data = 0x2b;  // Row address set
+    data = RASET; 
     spi_device_polling_transmit(device, &t);
     gpio_set_level(PIN_NUM_DC, 1);
-    uint8_t y_vals[] = {0x00, 128, 0x00, 128};
+    uint8_t y_vals[] = {0x00, 50, 0x00, 52};
     t.length = 4*8;
     t.tx_buffer = y_vals;
     spi_device_polling_transmit(device, &t);
     // Enable write to ram
     gpio_set_level(PIN_NUM_DC, 0);
-    data = 0x2c;
+    data = RAMWR;
     t.length = 8;
     t.tx_buffer = &data;
     spi_device_polling_transmit(device, &t);
     // Write pixels
     gpio_set_level(PIN_NUM_DC, 1);
-    uint8_t color[] = {0xff, 0xff, 0x00};
+    uint8_t color[] = {0xff, 0xff, 0xff};
     t.length = 3*8;
     t.tx_buffer = color;
     for (int i = 0; i < 1000; i++) {
