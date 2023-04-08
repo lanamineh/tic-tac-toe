@@ -79,7 +79,7 @@ void app_main(void)
     data = 0x2b;  // Row address set
     spi_device_polling_transmit(device, &t);
     gpio_set_level(PIN_NUM_DC, 1);
-    uint8_t y_vals[] = {0x00, 0x00, 0x00, 0x02};
+    uint8_t y_vals[] = {0x00, 128, 0x00, 128};
     t.length = 4*8;
     t.tx_buffer = y_vals;
     spi_device_polling_transmit(device, &t);
@@ -91,13 +91,16 @@ void app_main(void)
     spi_device_polling_transmit(device, &t);
     // Write pixels
     gpio_set_level(PIN_NUM_DC, 1);
-    uint8_t color[] = {0x00, 0x00, 0xff};
+    uint8_t color[] = {0xff, 0xff, 0x00};
     t.length = 3*8;
     t.tx_buffer = color;
-    for (int i = 0; i < 132*2; i++) {
+    for (int i = 0; i < 1000; i++) {
 	spi_device_polling_transmit(device, &t);
     }
 
+    // To display
+    // CASET can go from 2 to 129
+    // RASET can go from 1 to 128 
     
     
     while (true)
