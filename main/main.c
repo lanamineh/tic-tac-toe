@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include "freertos/FreeRTOS.h"
@@ -63,22 +64,41 @@ void app_main(void)
     spi_device_polling_transmit(device, &t);
     vTaskDelay(120 / portTICK_PERIOD_MS);
 
-    data = 0x30; // Set partial area
+    // Set 18-bit pixel mode
+    data = 0x3a;
     spi_device_polling_transmit(device, &t);
-    gpio_set_level(PIN_NUM_DC, 1);  // Transmit data
-    uint32_t long_data = 0x50000000;
-    spi_transaction_t long_t = {
-	.length = 8*4,  // Length of data * num bits in a byte
-	.tx_buffer = &long_data,
-    };
-    spi_device_polling_transmit(device, &long_t);
-    
-    gpio_set_level(PIN_NUM_DC, 0);  // Only transmit commands
-    data = 0x12; // Partial mode on
+    gpio_set_level(PIN_NUM_DC, 1);
+    data = 0x06;
     spi_device_polling_transmit(device, &t);
-    
+
+    gpio_set_level(PIN_NUM_DC, 0);
     data = 0x29; // Display on
     spi_device_polling_transmit(device, &t); 
+
+    // Try to get one row
+    /* data = 0x2b;  // Row address set */
+    /* spi_device_polling_transmit(device, &t); */
+    /* gpio_set_level(PIN_NUM_DC, 1); */
+    /* uint8_t y_vals[] = {0x00, 0x00, 0x00, 0x04}; */
+    /* t.length = 4*8; */
+    /* t.tx_buffer = y_vals; */
+    /* spi_device_polling_transmit(device, &t); */
+    // Enable write to ram
+    gpio_set_level(PIN_NUM_DC, 0);
+    data = 0x2c;
+    /* t.length = 8; */
+    /* t.tx_buffer = &data; */
+    spi_device_polling_transmit(device, &t);
+    // Write pixels
+    gpio_set_level(PIN_NUM_DC, 1);
+    uint8_t color[] = {0x00, 0x00, 0xff};
+    t.length = 3*8;
+    t.tx_buffer = color;
+    for (int i = 0; i < 128*160; i++) {
+	spi_device_polling_transmit(device, &t);
+    }
+
+    
     
     while (true)
     {
